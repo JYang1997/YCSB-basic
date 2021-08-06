@@ -16,6 +16,12 @@ permissions and limitations under the License. See accompanying
 LICENSE file.
 -->
 
+YCSB-basic
+==========================
+command for generate trace file using basic db:
+
+./bin/ycsb run basic -P workloads/workload_stack -s > workload_stack.run
+
 Yahoo! Cloud System Benchmark (YCSB)
 ====================================
 [![Build Status](https://travis-ci.org/brianfrankcooper/YCSB.png?branch=master)](https://travis-ci.org/brianfrankcooper/YCSB)
