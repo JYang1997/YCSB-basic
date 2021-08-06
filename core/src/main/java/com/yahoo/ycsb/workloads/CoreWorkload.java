@@ -86,6 +86,10 @@ public class CoreWorkload extends Workload {
   protected int fieldcount;
 
   private List<String> fieldnames;
+  
+  //junyaoy hashmap records size of all first get key
+  //after set, the size of key will change to set size,
+  private HashMap<String, StringByteIterator> kvdict;
 
   /**
    * The name of the property for the field length distribution. Options are "uniform", "zipfian"
@@ -335,7 +339,8 @@ public class CoreWorkload extends Workload {
     } else if (fieldlengthdistribution.compareTo("uniform") == 0) {
       fieldlengthgenerator = new UniformIntegerGenerator(1, fieldlength);
     } else if (fieldlengthdistribution.compareTo("zipfian") == 0) {
-      fieldlengthgenerator = new ZipfianGenerator(1, fieldlength);
+      //junyao 08/05/2021
+      fieldlengthgenerator = new ZipfianGenerator(1, fieldlength, (double)0.5);
     } else if (fieldlengthdistribution.compareTo("histogram") == 0) {
       try {
         fieldlengthgenerator = new HistogramGenerator(fieldlengthhistogram);
@@ -365,6 +370,8 @@ public class CoreWorkload extends Workload {
       fieldnames.add("field" + i);
     }
     fieldlengthgenerator = CoreWorkload.getFieldLengthGenerator(p);
+    //junyaoy 08/05/2021
+    kvdict = new HashMap<String, StringByteIterator>();
 
     recordcount =
         Integer.parseInt(p.getProperty(Client.RECORD_COUNT_PROPERTY, Client.DEFAULT_RECORD_COUNT));
@@ -680,6 +687,15 @@ public class CoreWorkload extends Workload {
     }
 
     HashMap<String, ByteIterator> cells = new HashMap<String, ByteIterator>();
+    //junyaoy 08/05/2021 this is used for basicDB
+    //first check whether the key is in the map, if it is, don't call generator, just use the string
+    //otherwise, call the generator, generate the string and store it to the
+    String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+    if(kvdict.get(keyname)==null) {
+      kvdict.put(keyname, new StringByteIterator(buildDeterministicValue(keyname, fieldname)));
+    }
+    cells.put(keyname, kvdict.get(keyname));
+
     db.read(table, keyname, fields, cells);
 
     if (dataintegrity) {
@@ -782,7 +798,15 @@ public class CoreWorkload extends Workload {
     try {
       String dbkey = buildKeyName(keynum);
 
-      HashMap<String, ByteIterator> values = buildValues(dbkey);
+      //junyaoy comment
+      // HashMap<String, ByteIterator> values = buildValues(dbkey);
+
+      //junyaoy 08/05/2021
+      HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
+      String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+      kvdict.put(dbkey, new StringByteIterator(buildDeterministicValue(dbkey, fieldname)));
+      values.put(dbkey, kvdict.get(dbkey));
+      
       db.insert(table, dbkey, values);
     } finally {
       transactioninsertkeysequence.acknowledge(keynum);

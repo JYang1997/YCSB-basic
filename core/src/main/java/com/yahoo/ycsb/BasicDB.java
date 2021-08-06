@@ -38,6 +38,8 @@ public class BasicDB extends DB {
   private boolean randomizedelay;
   private int todelay;
 
+
+
   public BasicDB() {
     todelay = 0;
   }
@@ -70,6 +72,7 @@ public class BasicDB extends DB {
     verbose = Boolean.parseBoolean(getProperties().getProperty(VERBOSE, VERBOSE_DEFAULT));
     todelay = Integer.parseInt(getProperties().getProperty(SIMULATE_DELAY, SIMULATE_DELAY_DEFAULT));
     randomizedelay = Boolean.parseBoolean(getProperties().getProperty(RANDOMIZE_DELAY, RANDOMIZE_DELAY_DEFAULT));
+   
     if (verbose) {
       synchronized (System.out) {
         System.out.println("***************** properties *****************");
@@ -108,20 +111,42 @@ public class BasicDB extends DB {
    * @return Zero on success, a non-zero error code on error
    */
   public Status read(String table, String key, Set<String> fields, HashMap<String, ByteIterator> result) {
-    delay();
+    // delay();
 
+    // if (verbose) {
+    //   StringBuilder sb = getStringBuilder();
+    //   sb.append("READ ").append(table).append(" ").append(key).append(" [ ");
+    //   if (fields != null) {
+    //     for (String f : fields) {
+    //       sb.append(f).append(" ");
+    //     }
+    //   } else {
+    //     sb.append("<all fields>");
+    //   }
+
+    //   sb.append("]");
+    //   System.out.println(sb);
+    // }
+
+    //jy 08/04/2021
     if (verbose) {
       StringBuilder sb = getStringBuilder();
-      sb.append("READ ").append(table).append(" ").append(key).append(" [ ");
+      // sb.append("READ ").append(table).append(" ").append(key).append(" [ ");
+      sb.append(key.replaceAll("[^0-9]", ""));
       if (fields != null) {
-        for (String f : fields) {
-          sb.append(f).append(" ");
+        for (Map.Entry<String, ByteIterator> entry : result.entrySet()) {
+          // sb.append(entry.getKey()).append("=").append(entry.getValue().toString()).append(" ");
+          sb.append(",").append(Integer.toString((int)entry.getValue().bytesLeft()));
         }
+        // for (String f : fields) {
+        //   // String valueSizeStr = Integer.toString(f.length());
+        //   sb.append(",").append(Integer.toString((int)result.get(key).bytesLeft()));
+        // }
       } else {
         sb.append("<all fields>");
       }
 
-      sb.append("]");
+      sb.append(",GET");
       System.out.println(sb);
     }
 
@@ -171,17 +196,28 @@ public class BasicDB extends DB {
    * @return Zero on success, a non-zero error code on error
    */
   public Status update(String table, String key, HashMap<String, ByteIterator> values) {
-    delay();
+    // delay();
 
+    // if (verbose) {
+    //   StringBuilder sb = getStringBuilder();
+    //   sb.append("UPDATE ").append(table).append(" ").append(key).append(" [ ");
+    //   if (values != null) {
+    //     for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
+    //       sb.append(entry.getKey()).append("=").append(entry.getValue()).append(" ");
+    //     }
+    //   }
+    //   sb.append("]");
+    //   System.out.println(sb);
+    // }
+
+
+    //jy 08/04/2021 change update to delete operation
     if (verbose) {
       StringBuilder sb = getStringBuilder();
-      sb.append("UPDATE ").append(table).append(" ").append(key).append(" [ ");
-      if (values != null) {
-        for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
-          sb.append(entry.getKey()).append("=").append(entry.getValue()).append(" ");
-        }
-      }
-      sb.append("]");
+      sb.append(key.replaceAll("[^0-9]", ""));
+
+      sb.append(",,DELETE");
+      
       System.out.println(sb);
     }
 
@@ -198,21 +234,36 @@ public class BasicDB extends DB {
    * @return Zero on success, a non-zero error code on error
    */
   public Status insert(String table, String key, HashMap<String, ByteIterator> values) {
-    delay();
+    // delay();
 
+    // if (verbose) {
+    //   StringBuilder sb = getStringBuilder();
+    //   sb.append("INSERT ").append(table).append(" ").append(key).append(" [ ");
+    //   if (values != null) {
+    //     for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
+    //       sb.append(entry.getKey()).append("=").append(entry.getValue()).append(" ");
+    //     }
+    //   }
+
+    //   sb.append("]");
+    //   System.out.println(sb);
+    // }
+
+
+    //jy 08/04/2021 change insert to set operation
     if (verbose) {
       StringBuilder sb = getStringBuilder();
-      sb.append("INSERT ").append(table).append(" ").append(key).append(" [ ");
+      sb.append(key.replaceAll("[^0-9]", ""));
       if (values != null) {
         for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
-          sb.append(entry.getKey()).append("=").append(entry.getValue()).append(" ");
+          
+          sb.append(",").append(Integer.toString((int)(entry.getValue().bytesLeft())));
         }
       }
 
-      sb.append("]");
+      sb.append(",SET");
       System.out.println(sb);
     }
-
     return Status.OK;
   }
 

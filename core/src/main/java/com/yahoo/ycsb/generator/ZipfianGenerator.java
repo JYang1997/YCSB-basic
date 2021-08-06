@@ -40,7 +40,7 @@ import com.yahoo.ycsb.Utils;
  * The algorithm used here is from "Quickly Generating Billion-Record Synthetic Databases", Jim Gray et al, SIGMOD 1994.
  */
 public class ZipfianGenerator extends NumberGenerator {
-  public static final double ZIPFIAN_CONSTANT = 0.99;
+  public static final double ZIPFIAN_CONSTANT = 1.5;
 
   /**
    * Number of items.
